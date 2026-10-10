@@ -10,7 +10,11 @@ const app = express();
 // Hỗ trợ port của server mạng (process.env.PORT) hoặc 5000 khi chạy ở máy
 const port = process.env.PORT || 5000;
 
-app.use(cors());
+app.use(cors({
+    origin: 'https://foursaliensweb.netlify.app', // Cấp quyền cho web giao diện của ông
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+}));
 app.use(express.json()); 
 
 // ==========================================
