@@ -38,7 +38,7 @@ const db = mysql.createConnection({
   host: 'minato7-thanhphat792k6-66fe.k.aivencloud.com', // BÊ NGUYÊN CÁI LINK HOST CỦA AIVEN BỎ VÀO ĐÂY
   port: 19567,            // CỔNG PORT CỦA AIVEN
   user: 'avnadmin',
-  password: 'AVNS_zfJ3qPN5OuBQsPo7HSw',
+  password: 'AVNS_zfJ3qPN50uBQSPo7HSw',
   database: 'defaultdb',
   ssl: { rejectUnauthorized: false } // Dòng này bắt buộc phải có để Aiven cho kết nối
 });
