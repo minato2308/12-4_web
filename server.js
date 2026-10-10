@@ -21,9 +21,9 @@ app.use(express.json());
 // 1. CẤU HÌNH CLOUDINARY (Lấy ở Bước 1)
 // ==========================================
 cloudinary.config({
-  cloud_name: 'uxzf2ltw', 
-  api_key: '362366349455381', 
-  api_secret: '4FXVgYdmEb5M_K2sMarFsHWn_mc'
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
 const storage = new CloudinaryStorage({
@@ -42,7 +42,7 @@ const db = mysql.createConnection({
   host: 'minato7-thanhphat792k6-66fe.k.aivencloud.com', // BÊ NGUYÊN CÁI LINK HOST CỦA AIVEN BỎ VÀO ĐÂY
   port: 19567,            // CỔNG PORT CỦA AIVEN
   user: 'avnadmin',
-  password: 'AVNS_zfJ3qPN50uBQSPo7HSw',
+  password: process.env.DB_PASSWORD,
   database: 'defaultdb',
   ssl: { rejectUnauthorized: false } // Dòng này bắt buộc phải có để Aiven cho kết nối
 });
