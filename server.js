@@ -63,6 +63,40 @@ app.get('/api/memories', (req, res) => {
   });
 });
 
+// ==========================================
+// API CHO TÍNH NĂNG GÓP Ý / LƯU BÚT
+// ==========================================
+
+// 1. API Lấy danh sách góp ý (Sắp xếp mới nhất lên đầu)
+app.get('/api/feedbacks', (req, res) => {
+    const sql = 'SELECT * FROM feedbacks ORDER BY created_at DESC';
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error("Lỗi lấy góp ý:", err);
+            return res.status(500).json({ error: 'Lỗi server' });
+        }
+        res.json(results);
+    });
+});
+
+// 2. API Gửi góp ý mới
+app.post('/api/feedbacks', (req, res) => {
+    const { name, content } = req.body;
+    
+    if (!name || !content) {
+        return res.status(400).json({ error: 'Ê, chưa nhập tên hoặc nội dung kìa!' });
+    }
+
+    const sql = 'INSERT INTO feedbacks (name, content) VALUES (?, ?)';
+    db.query(sql, [name, content], (err, result) => {
+        if (err) {
+            console.error("Lỗi lưu góp ý:", err);
+            return res.status(500).json({ error: 'Lỗi server' });
+        }
+        res.json({ message: 'Gửi thành công!', id: result.insertId });
+    });
+});
+
 app.post('/api/memories', upload.single('imageFile'), (req, res) => {
   const { category } = req.body;
 
