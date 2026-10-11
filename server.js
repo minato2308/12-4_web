@@ -11,7 +11,7 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 app.use(cors({
-    origin: 'https://foursaliensweb.netlify.app', // Cấp quyền cho web giao diện của ông
+    origin: ['https://foursaliensweb.netlify.app', 'http://localhost:5173'], // Cấp quyền cho web giao diện của ông
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 }));
