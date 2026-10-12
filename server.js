@@ -11,14 +11,18 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 app.use(cors({
-    origin: ['https://foursaliensweb.netlify.app', 'http://localhost:5173'], // Cấp quyền cho web giao diện của ông
+    origin: [
+        'https://foursaliensweb.netlify.app', 
+        'http://localhost:5173',
+        // 'https://link-web-nhac-cua-ong.netlify.app' // 🟢 CHÚ Ý: Sau này up web_nhac lên Netlify, nhớ bỏ dấu // và dán link vào đây nha!
+    ], 
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true
 }));
 app.use(express.json()); 
 
 // ==========================================
-// 1. CẤU HÌNH CLOUDINARY (Lấy ở Bước 1)
+// 1. CẤU HÌNH CLOUDINARY
 // ==========================================
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -29,7 +33,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'class_memories', // Tự tạo thư mục tên này trên Cloudinary
+    folder: 'class_memories', 
     allowedFormats: ['jpg', 'png', 'jpeg', 'webp'],
   },
 });
@@ -39,12 +43,12 @@ const upload = multer({ storage: storage });
 // 2. CẤU HÌNH MYSQL TRÊN MÂY (AIVEN)
 // ==========================================
 const db = mysql.createConnection({
-  host: 'minato7-thanhphat792k6-66fe.k.aivencloud.com', // BÊ NGUYÊN CÁI LINK HOST CỦA AIVEN BỎ VÀO ĐÂY
-  port: 19567,            // CỔNG PORT CỦA AIVEN
+  host: 'minato7-thanhphat792k6-66fe.k.aivencloud.com', 
+  port: 19567,            
   user: 'avnadmin',
   password: process.env.DB_PASSWORD,
   database: 'defaultdb',
-  ssl: { rejectUnauthorized: false } // Dòng này bắt buộc phải có để Aiven cho kết nối
+  ssl: { rejectUnauthorized: false } 
 });
 
 db.connect((err) => {
@@ -53,7 +57,7 @@ db.connect((err) => {
 });
 
 // ==========================================
-// 3. API NHẬN VÀ GỬI ẢNH
+// 3. API CHO WEB GỐC (FOUR'S ALIENS)
 // ==========================================
 app.get('/api/memories', (req, res) => {
   const sql = 'SELECT * FROM memories ORDER BY created_at DESC';
@@ -63,11 +67,6 @@ app.get('/api/memories', (req, res) => {
   });
 });
 
-// ==========================================
-// API CHO TÍNH NĂNG GÓP Ý / LƯU BÚT
-// ==========================================
-
-// 1. API Lấy danh sách góp ý (Sắp xếp mới nhất lên đầu)
 app.get('/api/feedbacks', (req, res) => {
     const sql = 'SELECT * FROM feedbacks ORDER BY created_at DESC';
     db.query(sql, (err, results) => {
@@ -79,7 +78,6 @@ app.get('/api/feedbacks', (req, res) => {
     });
 });
 
-// 2. API Gửi góp ý mới
 app.post('/api/feedbacks', (req, res) => {
     const { name, content } = req.body;
     
@@ -104,10 +102,62 @@ app.post('/api/memories', upload.single('imageFile'), (req, res) => {
     return res.status(400).json({ error: 'Thiếu file ảnh hoặc tên thư mục' });
   }
 
-  // Cloudinary nhận ảnh xong sẽ trả về link xịn qua req.file.path
   const url = req.file.path;
-
   const sql = 'INSERT INTO memories (type, category, url) VALUES (?, ?, ?)';
+  db.query(sql, ['photo', category, url], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.status(201).json({ message: 'Upload thành công!', id: result.insertId });
+  });
+});
+
+// ==========================================
+// 4. API CHO WEB NHẠC (BẢN NHÂN BẢN - ĐUÔI _2) 🟢
+// ==========================================
+app.get('/api/memories_2', (req, res) => {
+  const sql = 'SELECT * FROM memories_2 ORDER BY created_at DESC';
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+});
+
+app.get('/api/feedbacks_2', (req, res) => {
+    const sql = 'SELECT * FROM feedbacks_2 ORDER BY created_at DESC';
+    db.query(sql, (err, results) => {
+        if (err) {
+            console.error("Lỗi lấy góp ý web nhạc:", err);
+            return res.status(500).json({ error: 'Lỗi server' });
+        }
+        res.json(results);
+    });
+});
+
+app.post('/api/feedbacks_2', (req, res) => {
+    const { name, content } = req.body;
+    
+    if (!name || !content) {
+        return res.status(400).json({ error: 'Thiếu tên hoặc nội dung nha!' });
+    }
+
+    const sql = 'INSERT INTO feedbacks_2 (name, content) VALUES (?, ?)';
+    db.query(sql, [name, content], (err, result) => {
+        if (err) {
+            console.error("Lỗi lưu góp ý web nhạc:", err);
+            return res.status(500).json({ error: 'Lỗi server' });
+        }
+        res.json({ message: 'Gửi thành công!', id: result.insertId });
+    });
+});
+
+app.post('/api/memories_2', upload.single('imageFile'), (req, res) => {
+  const { category } = req.body;
+
+  if (!req.file || !category) {
+    return res.status(400).json({ error: 'Thiếu file ảnh hoặc tên thư mục' });
+  }
+
+  const url = req.file.path;
+  const sql = 'INSERT INTO memories_2 (type, category, url) VALUES (?, ?, ?)';
   db.query(sql, ['photo', category, url], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     res.status(201).json({ message: 'Upload thành công!', id: result.insertId });
