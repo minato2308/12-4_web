@@ -150,15 +150,17 @@ app.post('/api/feedbacks_2', (req, res) => {
 });
 
 app.post('/api/memories_2', upload.single('imageFile'), (req, res) => {
-  const { category } = req.body;
+  const { category, musicLink } = req.body; // 🟢 THÊM musicLink vào đây
 
   if (!req.file || !category) {
     return res.status(400).json({ error: 'Thiếu file ảnh hoặc tên thư mục' });
   }
 
   const url = req.file.path;
-  const sql = 'INSERT INTO memories_2 (type, category, url) VALUES (?, ?, ?)';
-  db.query(sql, ['photo', category, url], (err, result) => {
+  // 🟢 Sửa câu SQL để nhét thêm cột music_link
+  const sql = 'INSERT INTO memories_2 (type, category, url, music_link) VALUES (?, ?, ?, ?)';
+  
+  db.query(sql, ['photo', category, url, musicLink || null], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
     res.status(201).json({ message: 'Upload thành công!', id: result.insertId });
   });
